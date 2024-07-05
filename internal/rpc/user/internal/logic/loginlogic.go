@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
-	"github.com/littlehole/paper-sharing/rpc/user/internal/svc"
-	"github.com/littlehole/paper-sharing/rpc/user/user"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/svc"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

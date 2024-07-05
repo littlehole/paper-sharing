@@ -19,10 +19,11 @@ type LoginResponse struct {
 }
 
 type RegisterRequest struct {
-	Username string `json:"username"`
+	Name     string `json:"username"`
 	Password string `json:"password"`
-	LabID    string `json:"labID"`
+	LabName  string `json:"labName"`
 	LabPass  string `json:"labPass"`
+	Grade    string `json:"grade"`
 }
 
 type RegisterResponse struct {

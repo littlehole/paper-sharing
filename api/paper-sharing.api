@@ -1,54 +1,51 @@
 syntax = "v1"
 
-info(
-    title: "paper-sharing api"
-    desc: "这是一个简单论文分享系统的api文件"
-    author: "littlehole"
-    email: ""
+info (
+	title:  "paper-sharing api"
+	desc:   "这是一个简单论文分享系统的api文件"
+	author: "littlehole"
+	email:  ""
 )
 
 // User
 type (
-    JwtToken {
-        AccessToken string `json:"accessToken,omitempty"`
-        AccessExpire int64 `json:"accessExpire,omitempty"`
-        RefreshAfter int64 `json:"refreshAfter,omitempty"`
-    }
-
-    RegisterRequest {
-        Username string `json:"username"`
-        Password string `json:"password"`
-        LabID string `json:"labID"`
-        LabPass string `json:"labPass"`
-    }
-
-    RegisterResponse {
-        Username string `json:"username"`
-        CreatedAt string `json:"createdAt"`
-        Message string `json:"message"`
-        JwtToken
-    }
-
-    LoginRequst {
-        Username string `json:"username"`
-        Password string `json:"password"`
-    }
-
-    LoginResponse {
-        Username string `json:"username"`
-        Message string `json:"message"`
-        JwtToken
-    }
+	JwtToken {
+		AccessToken  string `json:"accessToken,omitempty"`
+		AccessExpire int64  `json:"accessExpire,omitempty"`
+		RefreshAfter int64  `json:"refreshAfter,omitempty"`
+	}
+	RegisterRequest {
+		Name     string `json:"username"`
+		Password string `json:"password"`
+		LabName  string `json:"labName"`
+		LabPass  string `json:"labPass"`
+		Grade    string `json:"grade"`
+	}
+	RegisterResponse {
+		Username  string `json:"username"`
+		CreatedAt string `json:"createdAt"`
+		Message   string `json:"message"`
+		JwtToken
+	}
+	LoginRequst {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	LoginResponse {
+		Username string `json:"username"`
+		Message  string `json:"message"`
+		JwtToken
+	}
 )
 
-service paper-sharing-api {
-    @handler ping
-    post /user/ping
+service paperSharing-api {
+	@handler ping
+	post /user/ping
 
-    @handler register
-    post /user/register (RegisterRequest) returns (RegisterResponse)
+	@handler register
+	post /user/register (RegisterRequest) returns (RegisterResponse)
 
-    @handler login
-    post /user/login (LoginRequst) returns (LoginResponse)
+	@handler login
+	post /user/login (LoginRequst) returns (LoginResponse)
 }
 

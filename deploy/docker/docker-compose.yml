@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  etcd:
+    container_name: etcd
+    image: bitnami/etcd:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+    privileged: true
+    volumes:
+      - /etcd/data:/etcd/data
+    ports:
+      - "8889:2379"
+
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    volumes:
+      - /data/mysql/data:/data/mysql/data
+      - /data/mysql/conf:/data/mysql/conf
+      - /data/mysql/logs:/data/mysql/logs
+    ports:
+      - "3306:3306"
+    restart: always
+
+#  redis:
+#    container_name: redis
+#    image: redis:latest
+#    restart: always
+#    environment:
+#      - TZ=Asia/Shanghai
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - /data/redis/conf:/data/redis/conf
+#      - /data/redis/data:/data/redis/data
+#      - /data/redis/logs:/data/redis/logs

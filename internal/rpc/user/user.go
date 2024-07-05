@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/littlehole/paper-sharing/rpc/user/internal/config"
-	"github.com/littlehole/paper-sharing/rpc/user/internal/server"
-	"github.com/littlehole/paper-sharing/rpc/user/internal/svc"
-	"github.com/littlehole/paper-sharing/rpc/user/user"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/config"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/server"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/svc"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/user"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

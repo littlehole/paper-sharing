@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"github.com/littlehole/paper-sharing/rpc/user/internal/logic"
-	"github.com/littlehole/paper-sharing/rpc/user/internal/svc"
-	"github.com/littlehole/paper-sharing/rpc/user/user"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/logic"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/svc"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/user"
 )
 
 type UserServer struct {

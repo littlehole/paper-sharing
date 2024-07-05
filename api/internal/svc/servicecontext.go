@@ -2,7 +2,7 @@ package svc
 
 import (
 	"github.com/littlehole/paper-sharing/api/internal/config"
-	"github.com/littlehole/paper-sharing/rpc/user/userclient"
+	"github.com/littlehole/paper-sharing/internal/rpc/user/userclient"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
