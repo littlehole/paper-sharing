@@ -7,6 +7,14 @@ info (
 	email:  ""
 )
 
+// Ping
+type (
+	PingRequest  {}
+	PingResponse {
+		Message string `json:"message"`
+	}
+)
+
 // User
 type (
 	JwtToken {
@@ -15,11 +23,12 @@ type (
 		RefreshAfter int64  `json:"refreshAfter,omitempty"`
 	}
 	RegisterRequest {
-		Name     string `json:"username"`
+		Username string `json:"username"`
 		Password string `json:"password"`
 		LabName  string `json:"labName"`
 		LabPass  string `json:"labPass"`
 		Grade    string `json:"grade"`
+		Name     string `json:"name"`
 	}
 	RegisterResponse {
 		Username  string `json:"username"`
@@ -39,9 +48,11 @@ type (
 )
 
 service paperSharing-api {
+	// ping
 	@handler ping
-	post /user/ping
+	get /ping (PingRequest) returns (PingResponse)
 
+	// user
 	@handler register
 	post /user/register (RegisterRequest) returns (RegisterResponse)
 

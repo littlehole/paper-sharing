@@ -12,11 +12,12 @@ message JwtToken {
 }
 
 message RegisterRequest {
-  string name = 1;
+  string username = 1;
   string password = 2;
   string labName = 3;
   string labPass = 4;
   string grade = 5;
+  string name = 6;
 }
 
 message RegisterResponse {

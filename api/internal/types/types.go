@@ -18,12 +18,20 @@ type LoginResponse struct {
 	JwtToken
 }
 
+type PingRequest struct {
+}
+
+type PingResponse struct {
+	Message string `json:"message"`
+}
+
 type RegisterRequest struct {
-	Name     string `json:"username"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 	LabName  string `json:"labName"`
 	LabPass  string `json:"labPass"`
 	Grade    string `json:"grade"`
+	Name     string `json:"name"`
 }
 
 type RegisterResponse struct {

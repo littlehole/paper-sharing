@@ -24,20 +24,26 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(req *types.RegisterRequest) (resp *types.RegisterResponse, err error) {
-	// todo: add your logic here and delete this line
-	res, err := l.svcCtx.UserClient.Register(l.ctx, &userclient.RegisterRequest{
+	res, err := l.svcCtx.UserClient.Register(l.ctx, convertRegisterRequestToRpc(req))
+	if err != nil {
+		l.Logger.Errorf("user register err: %v", err)
+		return nil, err
+	}
+	return convertRegisterResponseToHttp(res), err
+}
+
+func convertRegisterRequestToRpc(req *types.RegisterRequest) *userclient.RegisterRequest {
+	return &userclient.RegisterRequest{
+		Username: req.Username,
 		Name:     req.Name,
 		Password: req.Password,
 		LabName:  req.LabName,
 		LabPass:  req.LabPass,
 		Grade:    req.Grade,
-	})
-
-	if err != nil {
-		l.Logger.Errorf("user register err: %v", err)
-		return &types.RegisterResponse{Message: "error: " + err.Error()}, err
 	}
+}
 
+func convertRegisterResponseToHttp(res *userclient.RegisterResponse) *types.RegisterResponse {
 	return &types.RegisterResponse{
 		Username:  res.Username,
 		CreatedAt: res.CreateAt,
@@ -47,5 +53,5 @@ func (l *RegisterLogic) Register(req *types.RegisterRequest) (resp *types.Regist
 			AccessExpire: res.Jwt.AccessExpire,
 			RefreshAfter: res.Jwt.RefreshAfter,
 		},
-	}, err
+	}
 }

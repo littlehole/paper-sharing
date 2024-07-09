@@ -3,9 +3,9 @@ package logic
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/littlehole/paper-sharing/internal/db"
+	database "github.com/littlehole/paper-sharing/internal/db"
 	"github.com/littlehole/paper-sharing/internal/db/models"
+	rpcerrors "github.com/littlehole/paper-sharing/internal/errors"
 	"github.com/littlehole/paper-sharing/internal/rpc/user/internal/svc"
 	"github.com/littlehole/paper-sharing/internal/rpc/user/user"
 	"gorm.io/gorm"
@@ -14,6 +14,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
+
+var db = database.NewDB()
 
 type RegisterLogic struct {
 	ctx    context.Context
@@ -31,51 +33,96 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 
 func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterResponse, error) {
 	// todo: add your logic here and delete this line
-	db := db.NewDB()
-	var userModel models.UserModel
-	err := db.Model(&models.UserModel{}).
-		Where("lab_name = ? AND grade = ? AND name = ?", in.LabName, in.Grade, in.Name).First(&userModel).Error
+	// select user
+	var userModel *models.UserModel
+	var labModel *models.LabModel
+	err := db.Model(models.UserModel{}).
+		Where("lab_name = ? AND grade = ? AND name = ? AND username = ?",
+			in.LabName, in.Grade, in.Name, in.Username).First(&userModel).Error
 	if err == nil {
 		klog.Error("register user error: user already exists")
-		return &user.RegisterResponse{
-			Username: fmt.Sprintf("%s/%s/%s", in.LabName, in.Grade, in.Name),
-			CreateAt: time.Now().Format("2006-01-02 15:04:05"),
-			Message:  "fail to register user, reason: user already exists",
-			Jwt:      &user.JwtToken{},
-		}, nil
+		return nil, errors.New(rpcerrors.ErrUserExists)
 	}
+
+	userModel, labModel = converRegisterRequestToModel(in)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		// create
-		err := db.Model(&models.UserModel{}).Create(&models.UserModel{
-			UserInfo: models.UserInfo{
-				LabName: in.LabName,
-				Grade:   in.Grade,
-				Name:    in.Name,
-			},
-			Password:  in.Password,
+		if err := registerLabAndUser(userModel, labModel); err != nil {
+			l.Logger.Errorf("register lab error: %v", err)
+			return nil, err
+		}
+	} else {
+		// unknown error
+		l.Logger.Errorf("register user error: %v", err)
+		return nil, err
+	}
+
+	return &user.RegisterResponse{
+		Username: in.Username,
+		CreateAt: time.Now().Format("2006-01-02 15:04:05"),
+		Message:  "register successfully",
+		Jwt:      &user.JwtToken{},
+	}, nil
+}
+
+func registerLabAndUser(userModel *models.UserModel, labModel *models.LabModel) error {
+	// select lab
+	lab := &models.LabModel{}
+	err := db.Where("lab_name = ?", userModel.LabName).First(lab).Error
+	tx := db.Begin()
+	if err == nil {
+		// found in lab
+		// create user
+		// update lab
+		if err := tx.Create(&userModel).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		lab.UserList = append(lab.UserList, userModel.Username)
+		if err := tx.Updates(&labModel).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		// not found in lab
+		// create lab and user
+		if err := tx.Create(&userModel).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Create(labModel).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func converRegisterRequestToModel(req *user.RegisterRequest) (*models.UserModel, *models.LabModel) {
+	return &models.UserModel{
+			LabName:   req.LabName,
+			Grade:     req.Grade,
+			Name:      req.Name,
+			Username:  req.Username,
+			Password:  req.Password,
 			ShareList: []string{},
 			PaperList: []string{},
-		}).Error
-		if err != nil {
-			klog.Errorf("create user data error: %v", err)
-			return &user.RegisterResponse{
-				Username: fmt.Sprintf("%s/%s/%s", in.LabName, in.Grade, in.Name),
-				CreateAt: time.Now().Format("2006-01-02 15:04:05"),
-				Message:  "fail to register user, reason: create user data error: " + err.Error(),
-				Jwt:      &user.JwtToken{},
-			}, nil
+		},
+		&models.LabModel{
+			LabName:  req.LabName,
+			LabPass:  req.LabPass,
+			UserList: []string{req.Username},
 		}
-		return &user.RegisterResponse{
-			Username: fmt.Sprintf("%s/%s/%s", in.LabName, in.Grade, in.Name),
-			CreateAt: time.Now().Format("2006-01-02 15:04:05"),
-			Message:  "create successfully",
-			Jwt:      &user.JwtToken{},
-		}, nil
-	}
+}
+
+func convertModelToRegisterResponse(u *models.UserModel) *user.RegisterResponse {
 	return &user.RegisterResponse{
-		Username: fmt.Sprintf("%s/%s/%s", in.LabName, in.Grade, in.Name),
+		Username: u.Username,
 		CreateAt: time.Now().Format("2006-01-02 15:04:05"),
-		Message:  "fail to register user, reason: " + err.Error(),
+		Message:  "register successfully",
 		Jwt:      &user.JwtToken{},
-	}, err
+	}
 }
